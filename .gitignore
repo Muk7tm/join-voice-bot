@@ -1,0 +1,6 @@
+git rm --cached .env
+env
+/.env
+git add .gitignore
+git commit -m "Stop tracking .env for safety"
+git push
