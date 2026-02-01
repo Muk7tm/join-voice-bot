@@ -4,3 +4,4 @@ env
 git add .gitignore
 git commit -m "Stop tracking .env for safety"
 git push
+__pycache__/
