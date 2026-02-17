@@ -1,67 +1,79 @@
 # Join Voice Bot (Discord)
 
-A Discord bot that automatically joins a specific voice channel and plays a welcome audio message when a user joins. Perfect for support channels or community servers!
+A Discord bot that watches a selected voice channel, plays a welcome audio clip when users join, sends join notifications with a `سحب` (Bring) button, and provides configurable embed-based logs.
 
 ## Features
-- Automatically joins a designated voice channel when a user joins
-- Plays a custom welcome audio file (MP3)
-- Sends a join notification to a selected text channel with a blue `سحب` button
-- Clicking `سحب` moves the joined user to the clicking admin's current voice channel
-- Simple `/leave` slash command to disconnect the bot
-- Easy configuration with environment variables
+- Monitors one configured voice channel (`/setchannel`).
+- Plays a welcome audio file (`voice.mp3` by default) when a user joins that channel.
+- Sends join notifications to a configured text channel (`/setnotifychannel`).
+- Adds a blue `سحب` button to each join notification.
+- Moves the joined user to the clicker's voice channel when `سحب` is used.
+- Restricts `سحب` usage to:
+  - Administrators (always allowed), and
+  - Extra roles configured by admins.
+- Uses embed-based notifications and logs from `embed_settings.json`.
+- Supports optional log channel routing (`/setlogchannel`).
+
+## Role Access For `سحب`
+Admins can manage which roles are allowed to use the `سحب` button:
+- `/addbringrole <role>`: allow a role.
+- `/removebringrole <role>`: remove a role.
+- `/listbringroles`: list allowed roles.
+- `/clearbringroles`: clear all extra allowed roles.
+
+Notes:
+- Administrators are always allowed, even if no roles are configured.
+- Allowed roles are stored in `bring_roles.json`.
+
+## Slash Commands
+- `/setchannel <voice channel>`: set monitored voice channel.
+- `/setnotifychannel <text channel>`: set join notification channel.
+- `/setlogchannel <text channel>`: set log channel.
+- `/addbringrole <role>`: allow role to use `سحب`.
+- `/removebringrole <role>`: remove role from `سحب` access.
+- `/listbringroles`: show allowed `سحب` roles.
+- `/clearbringroles`: clear non-admin `سحب` role access.
+- `/reloadaudio`: check/reload audio file availability.
+- `/togglebot`: enable/disable automatic behavior.
+- `/leave`: disconnect bot from voice.
+- `/reloadembeds`: reload embed config from `embed_settings.json`.
 
 ## Setup
-
-### 1. Clone the repository
-```bash
-git clone https://github.com/yourusername/join-voice-bot-discord.git
-cd join-voice-bot-discord
-```
-
-### 2. Install dependencies
+1. Install dependencies:
 ```bash
 pip install -r requirements.txt
 ```
 
-### 3. Prepare your `.env` file
-Create a `.env` file in the project root:
+2. Create `.env`:
+```env
+DISCORD_TOKEN=your-bot-token
 ```
-DISCORD_TOKEN=your-bot-token-here
-```
 
-### 4. Add your welcome audio
-Place your `voice.mp3` file in the project root. This is the audio that will play when a user joins the target channel.
+3. Ensure FFmpeg is installed and available in your system `PATH`.
 
-### 5. Configure channels in Discord (admin)
-Use slash commands:
-- `/setchannel` to choose the monitored voice channel
-- `/setnotifychannel` to choose where join notifications + `سحب` button are sent
-- `/setlogchannel` (optional) to choose where bot logs are sent
+4. Put your welcome audio in the project root (default file: `voice.mp3`), or set `WELCOME_AUDIO_PATH` in your environment.
 
-## Usage
-Run the bot with:
+5. Start the bot:
 ```bash
 python app.py
 ```
 
-Invite the bot to your server and join the specified voice channel. The bot will join and play the welcome audio!
+6. In Discord (admin):
+- Run `/setchannel`
+- Run `/setnotifychannel`
+- Optionally run `/setlogchannel`
 
-Use `/leave` to make the bot disconnect from the voice channel.
+## Data Files
+- `target_channel.txt`: monitored voice channel ID.
+- `notify_channel.txt`: join notification text channel ID.
+- `log_channel.txt`: log text channel ID.
+- `bring_roles.json`: per-guild allowed role IDs for `سحب`.
+- `embed_settings.json`: embed styles and message templates.
 
 ## Requirements
 - Python 3.8+
-- FFmpeg installed and available in your system PATH
-
-## Environment Variables
-- `DISCORD_TOKEN`: Your Discord bot token (keep this secret!)
+- FFmpeg in `PATH`
 
 ## Security
-- The `.env` file is included in `.gitignore` and will not be published to GitHub.
-- **Never share your bot token publicly.**
-
-## License
-MIT
-
----
-
-Made with ❤️ for Discord communities!
+- Keep `.env` private.
+- Never share your bot token.
