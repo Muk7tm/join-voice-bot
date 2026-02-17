@@ -136,8 +136,8 @@
       "color": "#F59E0B"
     },
     "button_admin_only": {
-      "title": "صلاحيات غير كافية",
-      "description": "تحتاج صلاحية Administrator لاستخدام هذا الزر.",
+      "title": "Insufficient permissions",
+      "description": "You must be an administrator or have one of the roles allowed for this button.",
       "color": "#F59E0B"
     },
     "button_join_voice_first": {

@@ -26,6 +26,7 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 TARGET_CHANNEL_FILE = "target_channel.txt"
 LOG_CHANNEL_FILE = "log_channel.txt"
 NOTIFY_CHANNEL_FILE = "notify_channel.txt"
+BRING_ROLES_FILE = "bring_roles.json"
 EMBED_SETTINGS_FILE = "embed_settings.json"
 
 BRING_BUTTON_LABEL = "سحب"
@@ -365,6 +366,104 @@ def set_notify_channel_id(channel_id: int):
     _write_id(NOTIFY_CHANNEL_FILE, channel_id)
 
 
+def _read_json(path: str, default):
+    if not os.path.exists(path):
+        return copy.deepcopy(default)
+    try:
+        with open(path, "r", encoding="utf-8") as file:
+            data = json.load(file)
+        return data
+    except Exception:
+        return copy.deepcopy(default)
+
+
+def _write_json(path: str, payload):
+    with open(path, "w", encoding="utf-8") as file:
+        json.dump(payload, file, ensure_ascii=False, indent=2)
+
+
+def _normalize_role_id_list(raw_roles) -> list:
+    if not isinstance(raw_roles, list):
+        return []
+    normalized = []
+    seen = set()
+    for value in raw_roles:
+        try:
+            role_id = int(value)
+        except (TypeError, ValueError):
+            continue
+        if role_id in seen:
+            continue
+        seen.add(role_id)
+        normalized.append(role_id)
+    return normalized
+
+
+def _read_bring_roles_map() -> dict:
+    raw_map = _read_json(BRING_ROLES_FILE, {})
+    if not isinstance(raw_map, dict):
+        return {}
+
+    cleaned = {}
+    for guild_id, role_ids in raw_map.items():
+        normalized = _normalize_role_id_list(role_ids)
+        if normalized:
+            cleaned[str(guild_id)] = normalized
+    return cleaned
+
+
+def _write_bring_roles_map(role_map: dict):
+    cleaned = {}
+    for guild_id, role_ids in role_map.items():
+        normalized = _normalize_role_id_list(role_ids)
+        if normalized:
+            cleaned[str(guild_id)] = normalized
+    _write_json(BRING_ROLES_FILE, cleaned)
+
+
+def get_allowed_bring_role_ids(guild_id: int) -> list:
+    role_map = _read_bring_roles_map()
+    return role_map.get(str(guild_id), [])
+
+
+def set_allowed_bring_role_ids(guild_id: int, role_ids: list):
+    role_map = _read_bring_roles_map()
+    key = str(guild_id)
+    normalized = _normalize_role_id_list(role_ids)
+    if normalized:
+        role_map[key] = sorted(normalized)
+    elif key in role_map:
+        role_map.pop(key)
+    _write_bring_roles_map(role_map)
+
+
+def add_allowed_bring_role(guild_id: int, role_id: int) -> bool:
+    current = set(get_allowed_bring_role_ids(guild_id))
+    if role_id in current:
+        return False
+    current.add(role_id)
+    set_allowed_bring_role_ids(guild_id, list(current))
+    return True
+
+
+def remove_allowed_bring_role(guild_id: int, role_id: int) -> bool:
+    current = set(get_allowed_bring_role_ids(guild_id))
+    if role_id not in current:
+        return False
+    current.remove(role_id)
+    set_allowed_bring_role_ids(guild_id, list(current))
+    return True
+
+
+def member_can_use_bring_button(member: discord.Member) -> bool:
+    if member.guild_permissions.administrator:
+        return True
+    allowed_role_ids = set(get_allowed_bring_role_ids(member.guild.id))
+    if not allowed_role_ids:
+        return False
+    return any(role.id in allowed_role_ids for role in member.roles)
+
+
 def get_guild_voice_lock(guild_id: int) -> asyncio.Lock:
     lock = guild_voice_locks.get(guild_id)
     if lock is None:
@@ -441,7 +540,7 @@ class BringMemberView(discord.ui.View):
             return
 
         clicker = guild.get_member(interaction.user.id)
-        if clicker is None or not clicker.guild_permissions.administrator:
+        if clicker is None or not member_can_use_bring_button(clicker):
             await send_interaction_embed(interaction, "button_admin_only", context=build_context(guild=guild, actor=interaction.user, extra={"request_id": self.request_id}))
             await send_log(
                 guild,
@@ -904,7 +1003,185 @@ async def setnotifychannel(interaction: discord.Interaction, channel: discord.Te
         )
 
 
-@bot.tree.command(name="reloadaudio", description="التحقق من ملف صوت الترحيب وإعادة تحميله")
+@bot.tree.command(name="addbringrole", description="Allow a role to use the bring button")
+@app_commands.describe(role="Role to allow for the bring button")
+@app_commands.checks.has_permissions(administrator=True)
+async def addbringrole(interaction: discord.Interaction, role: discord.Role):
+    guild = interaction.guild
+    if guild is None:
+        await send_interaction_embed(
+            interaction,
+            "default",
+            context=build_context(actor=interaction.user, extra={"message": "This command can only be used in a server."}),
+            ephemeral=True,
+        )
+        return
+
+    was_added = add_allowed_bring_role(guild.id, role.id)
+    if was_added:
+        message = f"Added {role.mention} to the allowed roles for `{BRING_BUTTON_LABEL}`."
+        log_event = "Bring role added"
+        log_details = f"{interaction.user} added role {role.name} ({role.id}) to bring button access."
+        log_level = "info"
+    else:
+        message = f"{role.mention} is already allowed to use `{BRING_BUTTON_LABEL}`."
+        log_event = "Bring role already exists"
+        log_details = f"{interaction.user} tried to add an existing bring role: {role.name} ({role.id})."
+        log_level = "warning"
+
+    await send_interaction_embed(
+        interaction,
+        "default",
+        context=build_context(guild=guild, actor=interaction.user, extra={"message": message}),
+        ephemeral=True,
+        allowed_mentions=discord.AllowedMentions.none(),
+    )
+    await send_log(
+        guild,
+        log_level,
+        log_event,
+        log_details,
+        actor=interaction.user,
+        extra={
+            "command_name": "addbringrole",
+            "target_id": str(role.id),
+        },
+    )
+
+
+@bot.tree.command(name="removebringrole", description="Remove a role from bring button access")
+@app_commands.describe(role="Role to remove from the bring button list")
+@app_commands.checks.has_permissions(administrator=True)
+async def removebringrole(interaction: discord.Interaction, role: discord.Role):
+    guild = interaction.guild
+    if guild is None:
+        await send_interaction_embed(
+            interaction,
+            "default",
+            context=build_context(actor=interaction.user, extra={"message": "This command can only be used in a server."}),
+            ephemeral=True,
+        )
+        return
+
+    was_removed = remove_allowed_bring_role(guild.id, role.id)
+    if was_removed:
+        message = f"Removed {role.mention} from `{BRING_BUTTON_LABEL}` access."
+        log_event = "Bring role removed"
+        log_details = f"{interaction.user} removed role {role.name} ({role.id}) from bring button access."
+        log_level = "info"
+    else:
+        message = f"{role.mention} is not in the allowed list."
+        log_event = "Bring role remove skipped"
+        log_details = f"{interaction.user} tried to remove a role that is not allowed: {role.name} ({role.id})."
+        log_level = "warning"
+
+    await send_interaction_embed(
+        interaction,
+        "default",
+        context=build_context(guild=guild, actor=interaction.user, extra={"message": message}),
+        ephemeral=True,
+        allowed_mentions=discord.AllowedMentions.none(),
+    )
+    await send_log(
+        guild,
+        log_level,
+        log_event,
+        log_details,
+        actor=interaction.user,
+        extra={
+            "command_name": "removebringrole",
+            "target_id": str(role.id),
+        },
+    )
+
+
+@bot.tree.command(name="listbringroles", description="List roles allowed to use the bring button")
+@app_commands.checks.has_permissions(administrator=True)
+async def listbringroles(interaction: discord.Interaction):
+    guild = interaction.guild
+    if guild is None:
+        await send_interaction_embed(
+            interaction,
+            "default",
+            context=build_context(actor=interaction.user, extra={"message": "This command can only be used in a server."}),
+            ephemeral=True,
+        )
+        return
+
+    role_ids = get_allowed_bring_role_ids(guild.id)
+    valid_roles = []
+    for role_id in role_ids:
+        role = guild.get_role(role_id)
+        if role is not None:
+            valid_roles.append(role)
+
+    if [role.id for role in valid_roles] != role_ids:
+        set_allowed_bring_role_ids(guild.id, [role.id for role in valid_roles])
+
+    if valid_roles:
+        role_lines = "\n".join(f"- {role.mention}" for role in valid_roles)
+        message = (
+            f"Allowed roles for `{BRING_BUTTON_LABEL}`:\n"
+            f"{role_lines}\n"
+            "- Administrators are always allowed."
+        )
+    else:
+        message = f"No extra roles are configured for `{BRING_BUTTON_LABEL}`. Only administrators can use it."
+
+    await send_interaction_embed(
+        interaction,
+        "default",
+        context=build_context(guild=guild, actor=interaction.user, extra={"message": message}),
+        ephemeral=True,
+        allowed_mentions=discord.AllowedMentions.none(),
+    )
+    await send_log(
+        guild,
+        "info",
+        "Bring role list viewed",
+        f"{interaction.user} viewed bring button roles. Count: {len(valid_roles)}.",
+        actor=interaction.user,
+        extra={"command_name": "listbringroles"},
+    )
+
+
+@bot.tree.command(name="clearbringroles", description="Clear all non-admin role access for the bring button")
+@app_commands.checks.has_permissions(administrator=True)
+async def clearbringroles(interaction: discord.Interaction):
+    guild = interaction.guild
+    if guild is None:
+        await send_interaction_embed(
+            interaction,
+            "default",
+            context=build_context(actor=interaction.user, extra={"message": "This command can only be used in a server."}),
+            ephemeral=True,
+        )
+        return
+
+    had_roles = bool(get_allowed_bring_role_ids(guild.id))
+    set_allowed_bring_role_ids(guild.id, [])
+
+    message = f"Cleared all extra roles for `{BRING_BUTTON_LABEL}`."
+    if not had_roles:
+        message = f"There were no extra roles configured for `{BRING_BUTTON_LABEL}`."
+
+    await send_interaction_embed(
+        interaction,
+        "default",
+        context=build_context(guild=guild, actor=interaction.user, extra={"message": message}),
+        ephemeral=True,
+    )
+    await send_log(
+        guild,
+        "info",
+        "Bring roles cleared",
+        f"{interaction.user} cleared all non-admin bring button roles.",
+        actor=interaction.user,
+        extra={"command_name": "clearbringroles"},
+    )
+
+
+@bot.tree.command(name="reloadaudio", description="Check and reload the welcome audio file")
 @app_commands.checks.has_permissions(administrator=True)
 async def reloadaudio(interaction: discord.Interaction):
     context = build_context(
