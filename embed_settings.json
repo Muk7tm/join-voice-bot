@@ -1,0 +1,355 @@
+{
+  "global": {
+    "color": "#3B82F6",
+    "timestamp": true,
+    "thumbnail_url": "{bot_avatar_url}",
+    "footer_text": "بوت الانضمام الصوتي",
+    "footer_icon_url": "{bot_avatar_url}",
+    "log_min_level": "info"
+  },
+  "embeds": {
+    "default": {
+      "title": "بوت الانضمام الصوتي",
+      "description": "{message}",
+      "color": "#3B82F6"
+    },
+    "log_info": {
+      "title": "{level_icon} سجل معلومات",
+      "description": "{event}",
+      "color": "#0EA5E9",
+      "fields": [
+        {
+          "name": "معرّف الحدث",
+          "value": "`{event_id}`",
+          "inline": true
+        },
+        {
+          "name": "التفاصيل",
+          "value": "{details}",
+          "inline": false
+        },
+        {
+          "name": "المنفّذ",
+          "value": "{actor_mention}",
+          "inline": true
+        },
+        {
+          "name": "الأمر",
+          "value": "`{command_name}`",
+          "inline": true
+        },
+        {
+          "name": "الطلب",
+          "value": "`{request_id}`",
+          "inline": true
+        },
+        {
+          "name": "القناة الصوتية",
+          "value": "{voice_channel_mention}",
+          "inline": true
+        },
+        {
+          "name": "القناة النصية",
+          "value": "{text_channel_mention}",
+          "inline": true
+        },
+        {
+          "name": "السيرفر",
+          "value": "{guild_name} (`{guild_id}`)",
+          "inline": true
+        }
+      ]
+    },
+    "log_error": {
+      "title": "{level_icon} سجل أخطاء",
+      "description": "{event}",
+      "color": "#EF4444",
+      "fields": [
+        {
+          "name": "معرّف الحدث",
+          "value": "`{event_id}`",
+          "inline": true
+        },
+        {
+          "name": "التفاصيل",
+          "value": "{details}",
+          "inline": false
+        },
+        {
+          "name": "الخطأ",
+          "value": "`{error_text}`",
+          "inline": false
+        },
+        {
+          "name": "المنفّذ",
+          "value": "{actor_mention}",
+          "inline": true
+        },
+        {
+          "name": "الأمر",
+          "value": "`{command_name}`",
+          "inline": true
+        },
+        {
+          "name": "الطلب",
+          "value": "`{request_id}`",
+          "inline": true
+        },
+        {
+          "name": "القناة الصوتية",
+          "value": "{voice_channel_mention}",
+          "inline": true
+        },
+        {
+          "name": "القناة النصية",
+          "value": "{text_channel_mention}",
+          "inline": true
+        },
+        {
+          "name": "السيرفر",
+          "value": "{guild_name} (`{guild_id}`)",
+          "inline": true
+        }
+      ]
+    },
+    "join_notification": {
+      "title": "طلب سحب عضو",
+      "description": "الطلب `{request_id}`\n{user_mention} انضم إلى {voice_channel_mention}.\nاضغط **سحب** لنقله إلى قناتك الصوتية.",
+      "color": "#2563EB",
+      "thumbnail_url": "{user_avatar_url}",
+      "fields": [
+        {
+          "name": "العضو",
+          "value": "{user_display_name} (`{user_id}`)",
+          "inline": true
+        },
+        {
+          "name": "القناة الصوتية",
+          "value": "{voice_channel_name}",
+          "inline": true
+        }
+      ]
+    },
+    "button_server_only": {
+      "title": "غير متاح",
+      "description": "يمكن استخدام هذا الزر داخل سيرفر فقط.",
+      "color": "#F59E0B"
+    },
+    "button_admin_only": {
+      "title": "صلاحيات غير كافية",
+      "description": "تحتاج صلاحية Administrator لاستخدام هذا الزر.",
+      "color": "#F59E0B"
+    },
+    "button_join_voice_first": {
+      "title": "ادخل روم صوتي أولاً",
+      "description": "ادخل إلى روم صوتي ثم اضغط الزر مرة أخرى.",
+      "color": "#F59E0B"
+    },
+    "button_target_not_found": {
+      "title": "العضو غير موجود",
+      "description": "تعذر العثور على العضو الهدف للطلب `{request_id}`.",
+      "color": "#EF4444"
+    },
+    "button_target_not_in_voice": {
+      "title": "العضو ليس في روم صوتي",
+      "description": "{target_mention} لم يعد داخل روم صوتي.",
+      "color": "#F59E0B"
+    },
+    "button_target_not_in_monitored": {
+      "title": "العضو غادر الروم المحدد",
+      "description": "{target_mention} لم يعد في الروم الصوتي المراقب.",
+      "color": "#F59E0B"
+    },
+    "button_move_success": {
+      "title": "تم السحب بنجاح",
+      "description": "تم نقل {target_mention} إلى {destination_channel_mention}.",
+      "color": "#10B981"
+    },
+    "button_move_forbidden": {
+      "title": "لا توجد صلاحية للنقل",
+      "description": "لا أملك صلاحية نقل {target_mention}.",
+      "color": "#EF4444"
+    },
+    "button_move_failed": {
+      "title": "فشل السحب",
+      "description": "فشل نقل {target_mention}. الخطأ: `{error_text}`",
+      "color": "#EF4444"
+    },
+    "set_channel_success": {
+      "title": "تم تحديث الإعداد",
+      "description": "تم تحديد الروم المراقب إلى {voice_channel_mention}.",
+      "color": "#10B981"
+    },
+    "set_log_channel_success": {
+      "title": "تم تحديث الإعداد",
+      "description": "تم تحديد قناة السجلات إلى {text_channel_mention}.",
+      "color": "#10B981"
+    },
+    "set_notify_channel_success": {
+      "title": "تم تحديث الإعداد",
+      "description": "سيتم إرسال تنبيهات الانضمام إلى {text_channel_mention}.",
+      "color": "#10B981"
+    },
+    "audio_validated": {
+      "title": "تم العثور على الملف",
+      "description": "ملف صوت الترحيب موجود في `{audio_path}`.",
+      "color": "#10B981"
+    },
+    "audio_missing": {
+      "title": "ملف الصوت غير موجود",
+      "description": "لم يتم العثور على ملف صوت الترحيب في `{audio_path}`.",
+      "color": "#EF4444"
+    },
+    "bot_enabled": {
+      "title": "تم تفعيل البوت",
+      "description": "تم تفعيل سلوك الترحيب التلقائي.",
+      "color": "#10B981"
+    },
+    "bot_disabled": {
+      "title": "تم تعطيل البوت",
+      "description": "تم تعطيل سلوك الترحيب التلقائي.",
+      "color": "#F59E0B"
+    },
+    "leave_disconnected": {
+      "title": "تم الفصل",
+      "description": "تم فصل البوت من `{voice_channel_name}`.",
+      "color": "#10B981"
+    },
+    "leave_not_connected": {
+      "title": "غير متصل",
+      "description": "البوت غير متصل بأي روم صوتي.",
+      "color": "#F59E0B"
+    },
+    "reload_embeds_success": {
+      "title": "تم تحديث إعدادات الـ Embed",
+      "description": "تمت إعادة تحميل الإعدادات من `{settings_file}`.",
+      "color": "#10B981"
+    },
+    "permission_denied": {
+      "title": "لا توجد صلاحية",
+      "description": "ليس لديك صلاحية لاستخدام هذا الأمر.",
+      "color": "#EF4444"
+    },
+    "generic_command_error": {
+      "title": "خطأ في تنفيذ الأمر",
+      "description": "حدث خطأ أثناء تنفيذ `{command_name}`.\n`{error_text}`",
+      "color": "#EF4444"
+    },
+    "log_warning": {
+      "title": "{level_icon} سجل تحذير",
+      "description": "{event}",
+      "color": "#F59E0B",
+      "fields": [
+        {
+          "name": "معرّف الحدث",
+          "value": "`{event_id}`",
+          "inline": true
+        },
+        {
+          "name": "التفاصيل",
+          "value": "{details}",
+          "inline": false
+        },
+        {
+          "name": "المنفّذ",
+          "value": "{actor_mention}",
+          "inline": true
+        },
+        {
+          "name": "الأمر",
+          "value": "`{command_name}`",
+          "inline": true
+        },
+        {
+          "name": "الطلب",
+          "value": "`{request_id}`",
+          "inline": true
+        },
+        {
+          "name": "السيرفر",
+          "value": "{guild_name} (`{guild_id}`)",
+          "inline": true
+        }
+      ]
+    },
+    "log_debug": {
+      "title": "{level_icon} سجل تتبع",
+      "description": "{event}",
+      "color": "#64748B",
+      "fields": [
+        {
+          "name": "معرّف الحدث",
+          "value": "`{event_id}`",
+          "inline": true
+        },
+        {
+          "name": "التفاصيل",
+          "value": "{details}",
+          "inline": false
+        },
+        {
+          "name": "المنفّذ",
+          "value": "{actor_mention}",
+          "inline": true
+        },
+        {
+          "name": "الأمر",
+          "value": "`{command_name}`",
+          "inline": true
+        },
+        {
+          "name": "الطلب",
+          "value": "`{request_id}`",
+          "inline": true
+        },
+        {
+          "name": "السيرفر",
+          "value": "{guild_name} (`{guild_id}`)",
+          "inline": true
+        }
+      ]
+    },
+    "log_critical": {
+      "title": "{level_icon} سجل حرج",
+      "description": "{event}",
+      "color": "#B91C1C",
+      "fields": [
+        {
+          "name": "معرّف الحدث",
+          "value": "`{event_id}`",
+          "inline": true
+        },
+        {
+          "name": "التفاصيل",
+          "value": "{details}",
+          "inline": false
+        },
+        {
+          "name": "الخطأ",
+          "value": "`{error_text}`",
+          "inline": false
+        },
+        {
+          "name": "المنفّذ",
+          "value": "{actor_mention}",
+          "inline": true
+        },
+        {
+          "name": "الأمر",
+          "value": "`{command_name}`",
+          "inline": true
+        },
+        {
+          "name": "الطلب",
+          "value": "`{request_id}`",
+          "inline": true
+        },
+        {
+          "name": "السيرفر",
+          "value": "{guild_name} (`{guild_id}`)",
+          "inline": true
+        }
+      ]
+    }
+  }
+}

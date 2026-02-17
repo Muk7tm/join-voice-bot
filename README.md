@@ -5,7 +5,9 @@ A Discord bot that automatically joins a specific voice channel and plays a welc
 ## Features
 - Automatically joins a designated voice channel when a user joins
 - Plays a custom welcome audio file (MP3)
-- Simple `!leave` command to disconnect the bot
+- Sends a join notification to a selected text channel with a blue `سحب` button
+- Clicking `سحب` moves the joined user to the clicking admin's current voice channel
+- Simple `/leave` slash command to disconnect the bot
 - Easy configuration with environment variables
 
 ## Setup
@@ -30,8 +32,11 @@ DISCORD_TOKEN=your-bot-token-here
 ### 4. Add your welcome audio
 Place your `voice.mp3` file in the project root. This is the audio that will play when a user joins the target channel.
 
-### 5. Set your target channel
-Edit `app.py` and set the `TARGET_CHANNEL_ID` to your desired voice channel's ID.
+### 5. Configure channels in Discord (admin)
+Use slash commands:
+- `/setchannel` to choose the monitored voice channel
+- `/setnotifychannel` to choose where join notifications + `سحب` button are sent
+- `/setlogchannel` (optional) to choose where bot logs are sent
 
 ## Usage
 Run the bot with:
@@ -41,7 +46,7 @@ python app.py
 
 Invite the bot to your server and join the specified voice channel. The bot will join and play the welcome audio!
 
-Use `!leave` in any text channel to make the bot disconnect from the voice channel.
+Use `/leave` to make the bot disconnect from the voice channel.
 
 ## Requirements
 - Python 3.8+
